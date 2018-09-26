@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <link href="https://cdn.bootcss.com/bootstrap/4.1.1/css/bootstrap.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        .h1{
+            padding: 30px 0;
+        }
+        textarea{
+            width: 100%;
+        }
+        .card{
+            margin: 40px auto;
+        }
+    </style>
+</head>
+<body>
+   <div id="app">
+       <div class="header" style="background:#eee">
+           <p class="h1 text-center">Notes App_Vue.js</p>
+       </div>
+       <div class="container">
+           <button type="button" class="btn btn-primary" @click="add">添加笔记</button>
+       </div>
+        <div class="container">
+            <note v-for="(list,index) in lists" :key="index" :todo="list"></note>
+        </div>
+   </div>
+    <script src="https://cdn.bootcss.com/vue/2.5.17-beta.0/vue.js"></script>
+    <script src="https://cdn.bootcss.com/lodash.js/4.17.10/lodash.js"></script>
+    <script src="https://cdn.bootcss.com/moment.js/2.22.1/moment.js"></script>
+    <script src="https://cdn.bootcss.com/moment.js/2.22.1/locale/zh-cn.js"></script>
+   <script src="https://cdn.bootcss.com/autosize.js/4.0.2/autosize.js"></script>
+    <script>
+        Vue.component('note', {
+            props: ['todo'],
+            template:`<div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">{{gitTitle || '笔记标题'}}</h2>
+                    <textarea class="form-control" rows="" v-model="todo.text" @keyup="fun">{{todo.text}}</textarea>
+                    <p class="card-text">{{gitTime}} {{todo.text.length}}字</p>
+                    <i class="fa fa-trash float-right" title="删除这条笔记" @click="del"></i>
+        </div>
+    </div>`,
+            computed:{
+                gitTitle:function(){
+                    return _.truncate(this.todo.text, {'length':20});
+                },
+                gitTime:function(){
+                    return moment(this.todo.time).fromNow();
+                }
+            },
+            methods:{
+                del:function(){
+                    app.lists.splice(this._uid-1,1);
+                    localStorage.setItem('key',JSON.stringify(app.lists));
+                },
+                fun:function(){
+                    app.lists[this._uid-1].text=this.todo.text;
+                    app.lists[this._uid-1].time=new Date().getTime();
+                    localStorage.setItem('key',JSON.stringify(app.lists));
+                }
+            }
+        })
+        var app=new Vue({
+            el:'#app',
+            data:{
+                lists:[
+                        {"text":"笔记内容1","time":1537778713000},
+                        {"text":"笔记内容2","time":1537778417000},
+                        {"text":"笔记内容3","time":1537578317000}
+                    ]
+            },
+            methods:{
+                add:function(){
+                    this.lists.unshift({"text":"","time":new Date().getTime()});
+                    document.querySelector("textarea").focus();
+                    localStorage.setItem('key',JSON.stringify(this.lists));
+                },
+            },
+            created:function(){
+                if(JSON.parse(localStorage.getItem('key')) !==null){
+                    this.lists=JSON.parse(localStorage.getItem('key'));
+                }
+                autosize.destroy(document.querySelectorAll('textarea'));
+            }
+        })
+    </script>
+</body>
+</html>
